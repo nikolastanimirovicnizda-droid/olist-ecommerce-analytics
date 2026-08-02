@@ -31,6 +31,13 @@ def clean_orders_products_customers():
 
     products[cols_to_zero] = products[cols_to_zero].fillna(0)
 
+    products['product_category_name'] = products['product_category_name'].str.strip().str.lower()
+    customers['customer_city'] = customers['customer_city'].str.strip().str.lower()
+
+    orders = orders.drop_duplicates()
+    products = products.drop_duplicates()
+    customers = customers.drop_duplicates()
+
     orders.to_csv('../data/processed/orders_clean.csv', index=False)
     products.to_csv('../data/processed/products_clean.csv', index=False)
     customers.to_csv('../data/processed/customers_clean.csv', index=False)
@@ -48,6 +55,16 @@ def clean_items_payments_translations():
     # print('--- CATEGORY TRANSLATION INFO ---');print(category_translation.info());print(category_translation.isnull().sum())
 
     order_items['shipping_limit_date'] = pd.to_datetime(order_items['shipping_limit_date'])
+
+    category_translation['product_category_name'] = (
+        category_translation['product_category_name'].str.strip().str.lower())
+
+    category_translation['product_category_name_english'] = (
+        category_translation['product_category_name_english'].str.strip().str.lower())
+
+    order_items = order_items.drop_duplicates()
+    order_payments = order_payments.drop_duplicates()
+    category_translation = category_translation.drop_duplicates()
 
     order_items.to_csv('../data/processed/order_items_clean.csv', index=False)
     order_payments.to_csv('../data/processed/order_payments_clean.csv', index=False)
@@ -75,6 +92,13 @@ def clean_reviews_sellers_geo():
 
     reviews['review_comment_title'] = reviews['review_comment_title'].fillna('No title')
     reviews['review_comment_message'] = reviews['review_comment_message'].fillna('No message')
+
+    sellers['seller_city'] = sellers['seller_city'].str.strip().str.lower()
+    geolocation['geolocation_city'] = geolocation['geolocation_city'].str.strip().str.lower()
+
+    reviews = reviews.drop_duplicates()
+    sellers = sellers.drop_duplicates()
+    geolocation = geolocation.drop_duplicates()
 
     reviews.to_csv('../data/processed/order_reviews_clean.csv', index=False)
     sellers.to_csv('../data/processed/sellers_clean.csv', index=False)
