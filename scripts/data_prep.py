@@ -52,3 +52,30 @@ def clean_items_payments_translations():
     order_items.to_csv('../data/processed/order_items_clean.csv', index=False)
     order_payments.to_csv('../data/processed/order_payments_clean.csv', index=False)
     category_translation.to_csv('../data/processed/category_translation_clean.csv', index=False)
+
+
+def clean_reviews_sellers_geo():
+    reviews = pd.read_csv('../data/raw/olist_order_reviews_dataset.csv')
+    sellers = pd.read_csv('../data/raw/olist_sellers_dataset.csv')
+    geolocation = pd.read_csv('../data/raw/olist_geolocation_dataset.csv')
+
+    # print('--- REVIEWS INFO ---');print(reviews.info()); print(reviews.isnull().sum());
+    # print('\n');
+    # print('--- SELLERS INFO ---');print(sellers.info()); print(sellers.isnull().sum());
+    # print('\n');
+    # print('--- GEOLOCATION INFO ---');print(geolocation.info()); print(geolocation.isnull().sum());
+
+    dates_timestamp_cols = [
+        'review_creation_date',
+        'review_answer_timestamp',
+    ]
+
+    for col in dates_timestamp_cols:
+        reviews[col] = pd.to_datetime(reviews[col])
+
+    reviews['review_comment_title'] = reviews['review_comment_title'].fillna('No title')
+    reviews['review_comment_message'] = reviews['review_comment_message'].fillna('No message')
+
+    reviews.to_csv('../data/processed/order_reviews_clean.csv', index=False)
+    sellers.to_csv('../data/processed/sellers_clean.csv', index=False)
+    geolocation.to_csv('../data/processed/geolocation_clean.csv', index=False)
