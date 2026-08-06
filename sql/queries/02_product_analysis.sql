@@ -1,4 +1,4 @@
---2.
+--2. Product Analysis
 
 SELECT product_category_name AS product_category, COUNT(fact_orders.product_id) AS units_sold, ROUND(SUM(price)::numeric, 2) AS total_revenue,
 ROUND(AVG(review_score)::numeric, 2) AS avg_review_score
