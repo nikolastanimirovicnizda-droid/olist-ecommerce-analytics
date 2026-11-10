@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from sqlalchemy import create_engine
 
-DATABASE_URL = "postgresql://postgres:Nikola112534@localhost:5432/retail_analytics"
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 
 def load_staging_tables():
