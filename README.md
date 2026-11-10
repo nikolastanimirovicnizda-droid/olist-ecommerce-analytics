@@ -1,84 +1,126 @@
+[README.md](https://github.com/user-attachments/files/34655140/README.md)
 # Olist E-Commerce Analytics & Business Performance Report
 
-This repository contains an end-to-end data analytics project based on the Brazilian Olist E-Commerce dataset (~100k transactions from 2016 to 2018). The project includes PostgreSQL database setup, Star Schema data modeling, custom SQL analytical scripts, and a 4-page interactive Power BI dashboard.
+End-to-end data analytics project on the Brazilian Olist E-Commerce dataset (~100k orders, 2016–2018).
+The pipeline covers Python data cleaning, a PostgreSQL star schema, analytical SQL (RFM segmentation, revenue trends, category ranking) and a 4-page interactive Power BI dashboard.
 
----
+**Tools:** Python (pandas, SQLAlchemy) · PostgreSQL · SQL · Power BI (DAX)
 
-## Executive Summary & Consulting Report
-
-1. Problem Statement
-Olist connects small independent merchants across Brazil with large online marketplaces. Rapid growth brought several operational and decision-making challenges for executive leadership:
-- Revenue Visibility: Difficulty separating seasonal sales spikes from steady long-term growth.
-- Logistics Costs: High freight rates and longer delivery windows in non-metropolitan regions affecting customer conversion.
-- Category Performance: Limited insight into which product lines drive actual revenue versus those that simply create operational volume.
-
-This project delivers a structured data warehouse model and an interactive dashboard to give sales, operations, and leadership teams actionable metrics for better forecasting and logistics planning.
-
-2. Data & Architecture
-The original dataset consists of raw transactional files containing order statuses, product attributes, customer locations, payments, and freight fees.
-
-To ensure fast query performance and reliable cross-filtering in Power BI, the relational data was structured into a clean Star Schema:
-- Fact Table (`fact_orders`): Contains line-item transaction metrics, product pricing, and freight costs.
-- Dimension Tables:
-  - `dim_date`: Time intelligence attributes (Year, Quarter, Month, Day).
-  - `dim_customer`: Geographic fields (State, City) and unique customer identifiers.
-  - `dim_product`: Translated category names and product specs.
-
-3. Methodology
-a) Data Preparation & ETL: Cleaned raw records in PostgreSQL, mapped foreign keys, and normalized product category names.
-b) Data Modeling: Built 1-to-many single-direction relationships between dimension tables and the core fact table in Power BI.
-c) Exploratory Data Analysis (SQL): Wrote SQL scripts for RFM customer segmentation, quarterly revenue aggregation, and category ranking.
-d) Dashboard Development: Created a 4-page Power BI report using dedicated DAX measures for core business KPIs.
-
-4. Key Findings
-- Regional Concentration: The state of São Paulo (SP) is the primary operational hub, generating over 40% of total order volume and net revenue.
-- Product Performance: Categories like Health & Beauty and Bed Bath Table lead total order volume, whereas technical categories like Computers & Accessories drive the highest Average Order Value (AOV).
-- Freight Impact: Shipping fees make up a disproportionately high percentage of the total purchase price in Northern and Northeastern states, dampening sales growth outside the Southeast region.
-
-5. Strategic Recommendations
-a) Decentralized Logistics: Establish regional fulfillment hubs outside São Paulo to lower freight costs and speed up delivery times for Northern buyers.
-b) Product Bundling: Implement multi-item bundles for lower-priced categories to increase cart size and offset shipping costs.
-c) Targeted Expansion: Focus marketing acquisition campaigns on high-potential secondary markets like Rio de Janeiro and Belo Horizonte.
-
-6. Limitations
-- Historical Scope: The analysis uses static historical data ending in 2018 without real-time API integrations.
-- Data Granularity: The dataset lacks internal seller profit margins and customer acquisition costs (CAC), limiting profit margin evaluation.
-- Anonymized Customer Profiles: Customer IDs are anonymized, preventing demographic profiling by age or income group.
+**Dataset:** [Brazilian E-Commerce Public Dataset by Olist (Kaggle)](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
 
 ---
 
 ## Dashboard Preview
 
-Executive Overview
+### Executive Overview
 ![Executive Overview](page1_executive_overview.png)
 
-Sales Performance
+### Sales Performance
 ![Sales Performance](page2_sales_performance.png)
 
-Customer Analysis
+### Customer Analysis
 ![Customer Analysis](page3_customer_analysis.png)
 
-Operations & Logistics
+### Operations & Logistics
 ![Operations](page4_operations.png)
+
+---
+
+## Executive Summary
+
+### 1. Problem Statement
+
+Olist connects small independent merchants across Brazil with large online marketplaces. Rapid growth created several challenges for leadership:
+
+- **Revenue visibility:** difficulty separating seasonal spikes from steady long-term growth.
+- **Logistics costs:** high freight rates and longer delivery windows in non-metropolitan regions hurting conversion.
+- **Category performance:** limited insight into which product lines drive revenue versus those that only create operational volume.
+
+### 2. Data & Architecture
+
+The raw data consists of 9 CSV files (orders, items, payments, reviews, customers, sellers, products, geolocation, category translations). After cleaning, it is loaded into PostgreSQL staging tables (`stg_*`) and modeled into a star schema:
+
+- **Fact table `fact_orders`** (grain: one row per order item): price, freight, order status and timestamps, plus order-level review score and payment info.
+- **Dimensions:**
+  - `dim_date`: year, quarter, month, day, weekday, weekend flag
+  - `dim_customer`: unique customer ID, city, state, ZIP prefix
+  - `dim_product`: English category names and product attributes
+  - `dim_geography`: ZIP prefix with average latitude/longitude
+
+> **Modeling note:** `review_score` and `payment_value` are order-level values repeated on every item row of the same order. Do not `SUM` them in DAX (that would double-count multi-item orders); use averages or distinct order-level logic.
+
+### 3. Methodology
+
+1. **Data cleaning (Python):** parsed timestamps, handled missing values, standardized text fields, removed duplicates.
+2. **Data loading:** loaded cleaned CSVs into PostgreSQL staging tables.
+3. **Modeling (SQL):** built dimensions and the fact table; mapped Portuguese category names to English.
+4. **Analysis (SQL):** quarterly/monthly revenue, category ranking, RFM segmentation.
+5. **Dashboard (Power BI):** 4 pages with DAX measures and 1-to-many, single-direction relationships between dimensions and the fact table.
+
+### 4. Key Findings
+
+- **Regional concentration:** São Paulo (SP) is the main hub, generating over 40% of order volume and net revenue.
+- **Product performance:** Health & Beauty and Bed Bath Table lead order volume, while technical categories such as Computers & Accessories have the highest Average Order Value.
+- **Freight impact:** shipping makes up a disproportionately high share of the purchase price in the North and Northeast, dampening sales outside the Southeast.
+
+### 5. Strategic Recommendations
+
+1. **Decentralized logistics:** open regional fulfillment hubs outside São Paulo to cut freight cost and delivery time.
+2. **Product bundling:** multi-item bundles for low-priced categories to raise basket size and offset shipping.
+3. **Targeted expansion:** focus acquisition on secondary markets such as Rio de Janeiro and Belo Horizonte.
+
+### 6. Limitations
+
+- **Historical scope:** static data ending in 2018, no real-time integration.
+- **No cost data:** no seller margins or customer acquisition cost, so profitability cannot be evaluated.
+- **Anonymized customers:** no demographic profiling (age, income).
+- **Order statuses:** the fact table includes all order statuses (including canceled), so revenue figures reflect orders placed, not only delivered.
 
 ---
 
 ## KPI Metrics Dictionary
 
-| Metric | DAX / Logic | Description | Business Purpose |
-| :--- | :--- | :--- | :--- |
-| Total Revenue | `SUM(fact_orders[price])` | Sum of item sales prices | Tracks gross sales volume excluding shipping charges. |
-| Total Orders | `DISTINCTCOUNT(fact_orders[order_id])` | Count of unique order IDs | Measures order throughput and overall demand. |
-| Average Order Value (AOV) | `DIVIDE([Total Revenue], [Total Orders], 0)` | Total Revenue / Total Orders | Evaluates average customer spend per transaction. |
-| Total Customers | `DISTINCTCOUNT(dim_customer[customer_unique_id])` | Count of unique buyer IDs | Tracks overall active customer reach without duplicate order counts. |
-| Total Freight | `SUM(fact_orders[freight_value])` | Sum of shipping charges | Aggregates shipping fees across all transactions and regions. |
+| Metric | DAX | Description | Business Purpose |
+|---|---|---|---|
+| Total Revenue | `SUM(fact_orders[price])` | Sum of item prices, excluding freight | Tracks gross sales volume |
+| Total Orders | `DISTINCTCOUNT(fact_orders[order_id])` | Unique orders | Measures demand and throughput |
+| Average Order Value | `DIVIDE([Total Revenue], [Total Orders], 0)` | Revenue per order | Evaluates average customer spend |
+| Total Customers | `DISTINCTCOUNT(dim_customer[customer_unique_id])` | Unique buyers | Customer reach without duplicates |
+| Total Freight | `SUM(fact_orders[freight_value])` | Sum of shipping charges | Tracks shipping cost by region |
 
 ---
 
 ## Repository Structure
 
-- `01_sales_over_time.sql`: Quarterly and monthly revenue aggregation queries.
-- `02_product_analysis.sql`: Category performance and volume ranking scripts.
-- `03_customer_analytics.sql`: RFM segmentation and customer retention analysis.
-- `create_analytical_model.sql`: DDL script for table structures and Star Schema setup.
-- `olist_analytics_dashboard.pbix`: Main Power BI Desktop file.
+```
+.
+├── scripts/                       # Python: data cleaning and loading into PostgreSQL
+├── sql/
+│   ├── create_analytical_model.sql   # star schema (dimensions + fact table)
+│   ├── 01_sales_over_time.sql        # quarterly/monthly revenue
+│   ├── 02_product_analysis.sql       # category performance
+│   └── 03_customer_analytics.sql     # RFM segmentation
+├── olist_analytics_dashboard.pbix # Power BI report
+├── page1_executive_overview.png   # dashboard screenshots
+├── page2_sales_performance.png
+├── page3_customer_analysis.png
+├── page4_operations.png
+└── README.md
+```
+
+> The `data/` folder (raw and processed CSVs) is not included in the repository. Download the dataset from Kaggle (link above).
+
+---
+
+## How to Reproduce
+
+1. **Download** the dataset from Kaggle and place the CSVs in `data/raw/`. Create `data/processed/`.
+2. **Install dependencies:** `pip install pandas sqlalchemy psycopg2-binary`
+3. **Create a PostgreSQL database**, e.g. `retail_analytics`.
+4. **Set the connection string** as an environment variable (never hardcode credentials):
+   ```bash
+   export DATABASE_URL="postgresql://<user>:<password>@localhost:5432/retail_analytics"
+   ```
+5. **Run the scripts** from the `scripts/` folder: first the cleaning script, then the loading script.
+6. **Run** `sql/create_analytical_model.sql` to build the star schema, then the analysis queries.
+7. **Open** `olist_analytics_dashboard.pbix` in Power BI Desktop and point it to your database.
